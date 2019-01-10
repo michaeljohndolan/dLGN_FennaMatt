@@ -20,8 +20,10 @@ gene.Sum<-function(obj, norm.to.cell=F) {
 
 #Set paths and load processed cells 
 path<-"/Users/mdolan/Google Drive (mdolan@broadinstitute.org)/FennaMatt_dLGN_scRNAseq/"
+setwd(path)
 figPath<-"/Users/mdolan/Google Drive (mdolan@broadinstitute.org)/FennaMatt_dLGN_scRNAseq/Figures/"
 object<-readRDS("all_Processed.rds")
+#mgls<-readRDS("microglia_Reprocessed.rds")
 
 #Subset and save the microglia for further analysis. See mgl script. 
 mgls<-SubsetData(object = object, ident.use="9", subset.raw = TRUE, do.clean = TRUE)
