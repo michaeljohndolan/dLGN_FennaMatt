@@ -94,7 +94,7 @@ TSNEPlot(object = object, pt.size = 0.1, do.label = TRUE)
 FeaturePlot(object = object, features.plot = c("nUMI", "nGene", "percent.mito"), cols.use = c("grey", "blue") 
             ,reduction.use = "tsne", pt.size=0.2)
 
-#Using some well-described markers, identify different cell-types in this dataset. Microglia are clearly 9. 
+#Using some well-described markers, identify different cell-types in this dataset. Microglia are clearly 9. Macrophages 13
 FeaturePlot(object = object, features.plot = c("C1qa", "Fcrls", "Mrc1", "Tmem119"), cols.use = c("grey", "blue") 
             ,reduction.use = "tsne", pt.size=0.2)
 #Clusters 6-7 appear to be astrocytes.
@@ -114,6 +114,10 @@ TSNEPlot(object = object, pt.size = 0.1, do.label = FALSE)
 
 #Close printing to PDF 
 dev.off()
+
+#What are good markers for macrophages versus microglia 
+macro_v_mgls<-FindMarkers(object, ident.1 = 9, ident.2 = 13)
+View(macro_v_mgls)
 
 #Run NMF on the dataset to identify clear factors. Need to run this on the cloud
 object<-RunNMF(object,factors.compute = 18,log.norm = T)
