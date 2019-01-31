@@ -48,6 +48,11 @@ saveRDS(astros, "astrocytes_Reprocessed.rds")
 FeaturePlot(object = astros, features.plot = c("nUMI", "percent.mito", "nGene"), cols.use = c("grey", "blue") 
             ,reduction.use = "tsne", pt.size=0.1)
 
+#Compare different clusters and timepoint 
+mgls<-SetAllIdent(mgls, id = "timep") 
+mgls<-SetAllIdent(mgls, id = "res.0.6") 
+
+
 #Run NMF on the astros. 
 astros<-RunNMF(astros,factors.compute = 20,log.norm = T)
 pdf(paste0(figPath,"NMF_astros.pdf"))

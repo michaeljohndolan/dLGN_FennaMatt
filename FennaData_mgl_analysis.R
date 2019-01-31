@@ -97,6 +97,11 @@ g
 percent.proportions<-mutate(proportions, TotalCells=P10+P5, P5.percent=(P5/TotalCells)*100
                     ,P10.percent=(P10/TotalCells)*100 )
 
+#Find some differences that predict P5 or P10 mgls 
+mgls<-SetAllIdent(mgls, id = "timep") 
+mgls.ROC<-FindAllMarkers(object = mgls)
+mgls<-SetAllIdent(mgls, id = "res.0.6") 
+
 #Generate PDF of different microglial analyses
 pdf(paste0(figPath,"analysis_microglia.pdf"))
 mgls<-SetAllIdent(mgls, id = "res.0.6") 
