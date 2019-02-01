@@ -97,6 +97,11 @@ g
 percent.proportions<-mutate(proportions, TotalCells=P10+P5, P5.percent=(P5/TotalCells)*100
                     ,P10.percent=(P10/TotalCells)*100 )
 
+#Find some differences that predict P5 or P10 mgls 
+mgls<-SetAllIdent(mgls, id = "timep") 
+mgls.ROC<-FindAllMarkers(object = mgls)
+mgls<-SetAllIdent(mgls, id = "res.0.6") 
+
 #Generate PDF of different microglial analyses
 pdf(paste0(figPath,"analysis_microglia.pdf"))
 mgls<-SetAllIdent(mgls, id = "res.0.6") 
@@ -113,7 +118,7 @@ VlnPlot(mgls, features.plot = c("Siglech", "Csf1r", "Maf", "Tgfbr1", "4632428N05
 #Look at activation signal across different timepoints, differentially expressed at timepoints suggests it's real signal
 VlnPlot(mgls, features.plot = c("Fos", "Egr1", "Ier2", "Ccl3", "Ccl12"), point.size.use = 0.5)
 mgls<-SetAllIdent(mgls, id = "timep") 
-VlnPlot(mgls, features.plot = c("Fos", "Egr1", "Ier2", "Ccl3", "Ccl12"), point.size.use = 0.5)
+VlnPlot(mgls, features.plot = c("Fos", "Egr1", "Ier2", "Ccl3", "Ccl12", "Jun"), point.size.use = 0.5)
 dev.off()
 
 
