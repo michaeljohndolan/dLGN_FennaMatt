@@ -6,8 +6,9 @@ library(Matrix)
 library(dplyr)
 library(tidyr)
 
-#Initial df processing 
+#Initial df processing to extract all timepoint,sex and genotype data
 Tim.Mgl.assign<-readRDS("Google Drive (mdolan@broadinstitute.org)/Hammond2018_microglia_DGE/Round_2_40.cluster.assign.RDS")
 Tim.Mgl.assign<-as.data.frame(Tim.Mgl.assign)
 Tim.Mgl.assign$Barcodes<-row.names(Tim.Mgl.assign)
 row.names(Tim.Mgl.assign) <- NULL
+strsplit(Tim.Mgl.assign$Barcodes, "_")
