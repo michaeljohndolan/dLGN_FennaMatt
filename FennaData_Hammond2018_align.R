@@ -10,9 +10,8 @@ source("SeuratExtrafunctions.R")
 library(data.table)
 library(broom)
 library(tidyr)
-install.packages('devtools')
 library(devtools)
-install_github('MacoskoLab/liger')
+#install_github('MacoskoLab/liger')
 library(liger)
 
 #Set paths and load processed cells 
