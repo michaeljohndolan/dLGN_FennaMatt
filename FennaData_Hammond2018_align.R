@@ -50,8 +50,7 @@ TSNEPlot(object = hammond.P4.P5, pt.size = 0.05, do.label = TRUE)
 saveRDS(hammond.P4.P5, "FennaMatt_dLGN_scRNAseq/HammondP4P5_processed.rds")
 
 #Run liger to combine the two datasets 
-ligerex<-
-  (list(dLGN, Hammond2018), combined.seurat = F, use.tsne = F)
+ligerex<-createLiger(list(dLGN, Hammond2018), combined.seurat = F, use.tsne = F)
 
 #Normalize, scale (but not center) and find variable genes in the shared dataset 
 ligerex = normalize(ligerex)
@@ -65,9 +64,4 @@ ligerex = quantileAlignSNF(ligerex) #SNF clustering and quantile alignment
 #Visualize the alignment
 ligerex = runTSNE(ligerex)
 plotByDatasetAndCluster(ligerex) #Can also pass in different set of cluster labels to plot
-
-
-
-
-
 
