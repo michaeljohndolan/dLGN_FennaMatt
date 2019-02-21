@@ -10,6 +10,9 @@ source("SeuratExtrafunctions.R")
 library(data.table)
 library(broom)
 library(tidyr)
+install.packages('devtools')
+library(devtools)
+install_github('MacoskoLab/liger')
 library(liger)
 
 #Set paths and load processed cells 
@@ -17,10 +20,10 @@ path<-"/Users/michaeljohndolan/Google Drive (mdolan@broadinstitute.org)/"
 setwd(path)
 
 #Load up the data 
-hammond<-readRDS(file = "Hammond2018_microglia_DGE/Round_2_40.filtered.scaled.dge.RDS")
+#hammond<-readRDS(file = "Hammond2018_microglia_DGE/Round_2_40.filtered.scaled.dge.RDS")
 hammond<-CreateSeuratObject(hammond)
 mgls<-readRDS("FennaMatt_dLGN_scRNAseq/microglia_Reprocessed.rds")
-
+hammond<-readRDS(file = "FennaMatt_dLGN_scRNAseq/HammondP4P5_processed.rds")
 
 #Extract P4/P5 cells from Hammond dataset 
 hammond<-SetAllIdent(hammond, id = "orig.ident") 
@@ -47,7 +50,8 @@ TSNEPlot(object = hammond.P4.P5, pt.size = 0.05, do.label = TRUE)
 saveRDS(hammond.P4.P5, "FennaMatt_dLGN_scRNAseq/HammondP4P5_processed.rds")
 
 #Run liger to combine the two datasets 
-ligerex<-seuratToLiger(list(dLGN, Hammond2018), combined.seurat = F, use.tsne = F)
+ligerex<-
+  (list(dLGN, Hammond2018), combined.seurat = F, use.tsne = F)
 
 #Normalize, scale (but not center) and find variable genes in the shared dataset 
 ligerex = normalize(ligerex)

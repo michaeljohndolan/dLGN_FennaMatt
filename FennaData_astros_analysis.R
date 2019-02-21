@@ -52,7 +52,6 @@ FeaturePlot(object = astros, features.plot = c("nUMI", "percent.mito", "nGene"),
 astros<-SetAllIdent(astros, id = "timep") 
 TSNEPlot(object = astros, pt.size = 1, do.label = TRUE)
 astros<-SetAllIdent(astros, id = "res.0.6") 
-
 table(astros@meta.data$timep, astros@meta.data$res.0.6)
 
 #Run NMF on the astros. 
