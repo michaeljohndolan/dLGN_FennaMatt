@@ -49,9 +49,11 @@ FeaturePlot(object = astros, features.plot = c("nUMI", "percent.mito", "nGene"),
             ,reduction.use = "tsne", pt.size=0.1)
 
 #Compare different clusters and timepoint 
-mgls<-SetAllIdent(mgls, id = "timep") 
-mgls<-SetAllIdent(mgls, id = "res.0.6") 
+astros<-SetAllIdent(astros, id = "timep") 
+TSNEPlot(object = astros, pt.size = 1, do.label = TRUE)
+astros<-SetAllIdent(astros, id = "res.0.6") 
 
+table(astros@meta.data$timep, astros@meta.data$res.0.6)
 
 #Run NMF on the astros. 
 astros<-RunNMF(astros,factors.compute = 20,log.norm = T)
@@ -63,7 +65,7 @@ TSNEPlot(astros, do.label = T, pt.size = 1)
 dev.off()
 
 #Identify marker genes for the different subpopulations
-astro.markers<-FindAllMarkers(object = astros)
+astro.markers<-FindAllMarkers(object = astros, only.pos = T)
 
 
 
