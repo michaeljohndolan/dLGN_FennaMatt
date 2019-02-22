@@ -27,6 +27,9 @@ object<-readRDS("all_Processed.rds")
 
 #Subset and save the microglia for further analysis. See mgl script. 
 mgls<-SubsetData(object = object, ident.use="9", subset.raw = TRUE, do.clean = TRUE)
+#FILTER the cells again. NB otherwise you will have more 0s. 
+mgls<- FilterCells(object = mgls, subset.names = c("nGene", "nUMI","percent.mito"), 
+                     low.thresholds = c(200, 500, -Inf), high.thresholds = c(2500, 15000, 0.1))
 
 #Rerun the analysis pipeline on the mgl data only
 #Normalize the data and find the variable genes

@@ -20,7 +20,7 @@ setwd(path)
 
 #Load up the data 
 #hammond<-readRDS(file = "Hammond2018_microglia_DGE/Round_2_40.filtered.scaled.dge.RDS")
-hammond<-CreateSeuratObject(hammond)
+#hammond<-CreateSeuratObject(hammond)
 mgls<-readRDS("FennaMatt_dLGN_scRNAseq/microglia_Reprocessed.rds")
 hammond<-readRDS(file = "FennaMatt_dLGN_scRNAseq/HammondP4P5_processed.rds")
 
@@ -49,12 +49,13 @@ TSNEPlot(object = hammond.P4.P5, pt.size = 0.05, do.label = TRUE)
 saveRDS(hammond.P4.P5, "FennaMatt_dLGN_scRNAseq/HammondP4P5_processed.rds")
 
 #Run liger to combine the two datasets 
-ligerex<-createLiger(list(dLGN, Hammond2018), combined.seurat = F, use.tsne = F)
+ligerex<-seuratToLiger(list(dLGN, Hammond2018), combined.seurat = F, use.tsne = F)
 
 #Normalize, scale (but not center) and find variable genes in the shared dataset 
 ligerex = normalize(ligerex)
-#ligerex = selectGenes(ligerex, var.thresh = 0.1) Is this necessary if we did it and take union?
+ligerex = selectGenes(ligerex, var.thresh = c(0.1, 0.001))
 ligerex = scaleNotCenter(ligerex)
+
 
 #Perform the factorization
 ligerex = optimizeALS(ligerex, k = 20) 
@@ -64,3 +65,4 @@ ligerex = quantileAlignSNF(ligerex) #SNF clustering and quantile alignment
 ligerex = runTSNE(ligerex)
 plotByDatasetAndCluster(ligerex) #Can also pass in different set of cluster labels to plot
 
+#Read in the clusters from mgl and Hammond dataset. Note that cluster 13 corresponds to Tim's 8. 

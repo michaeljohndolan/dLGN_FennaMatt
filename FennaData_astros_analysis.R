@@ -27,7 +27,10 @@ object<-readRDS("all_Processed.rds")
 
 #Subset and save the microglia for further analysis. 
 astros<-SubsetData(object = object, ident.use=c("6", "7"), subset.raw = TRUE, do.clean = TRUE)
-
+#FILTER THE DATA AGAIN. TOO MANY0s
+astros<- FilterCells(object = astros, subset.names = c("nGene", "nUMI","percent.mito"), 
+                     low.thresholds = c(200, 500, -Inf), high.thresholds = c(2500, 15000, 0.1)
+                     
 #Rerun the analysis pipeline on the mgl data only
 #Normalize the data and find the variable genes
 astros<-NormalizeData(object = astros, normalization.method = "LogNormalize", scale.factor = 10000)
