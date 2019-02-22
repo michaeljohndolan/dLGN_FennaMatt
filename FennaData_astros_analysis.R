@@ -17,6 +17,13 @@ gene.Sum<-function(obj, norm.to.cell=F) {
   Values<-unname(obj)
   obj<-data.frame(Genes=Genes,Values=Values)
 } #Takes the row sum for all the genes. Can normalize to number of expressing cells. 
+remove.zero.genes <- function(exp) {
+  all.genes.sums <- rowSums(exp@data) 
+  genes.use <- names(all.genes.sums [which(all.genes.sums  >0)])
+  exp@raw.data <- exp@raw.data[genes.use, ]
+  exp@data <- exp@data[genes.use, ]
+  exp
+}
 
 #Set paths and load processed cells 
 path<-"/Users/mdolan/Google Drive (mdolan@broadinstitute.org)/FennaMatt_dLGN_scRNAseq/"
@@ -27,11 +34,13 @@ object<-readRDS("all_Processed.rds")
 
 #Subset and save the microglia for further analysis. 
 astros<-SubsetData(object = object, ident.use=c("6", "7"), subset.raw = TRUE, do.clean = TRUE)
-#FILTER THE DATA AGAIN. TOO MANY0s
-astros<- FilterCells(object = astros, subset.names = c("nGene", "nUMI","percent.mito"), 
-                     low.thresholds = c(200, 500, -Inf), high.thresholds = c(2500, 15000, 0.1)
+
+#How many genes are 0 accross the whole population of astros. Remove them 
+table(rowSums(astros@data)==0) #6k! 
+astros<-remove.zero.genes(astros)
+table(rowSums(astros@data)==0)  #0 
                      
-#Rerun the analysis pipeline on the mgl data only
+#Rerun the analysis pipeline on the astro data only
 #Normalize the data and find the variable genes
 astros<-NormalizeData(object = astros, normalization.method = "LogNormalize", scale.factor = 10000)
 astros<-FindVariableGenes(object = astros, mean.function = ExpMean, dispersion.function = LogVMR, 
@@ -67,6 +76,7 @@ TSNEPlot(astros, do.label = T, pt.size = 1)
 dev.off()
 
 #Identify marker genes for the different subpopulations
+astros<-SetAllIdent(astros, id = "res.0.6") 
 astro.markers<-FindAllMarkers(object = astros, only.pos = T)
 
 

@@ -17,12 +17,12 @@ gene.Sum<-function(obj, norm.to.cell=F) {
   Values<-unname(obj)
   obj<-data.frame(Genes=Genes,Values=Values)
 } #Takes the row sum for all the genes. Can normalize to number of expressing cells. 
-
 remove.zero.genes <- function(exp) {
   all.genes.sums <- rowSums(exp@data) 
   genes.use <- names(all.genes.sums [which(all.genes.sums  >0)])
-  exp@raw.data <- object@raw.data[genes.use, ]
-  exp@data <- object@data[genes.use, ]
+  exp@raw.data <- exp@raw.data[genes.use, ]
+  exp@data <- exp@data[genes.use, ]
+  exp
 }
 
 #Set paths and load processed cells 
@@ -37,7 +37,7 @@ mgls<-SubsetData(object = object, ident.use="9", subset.raw = TRUE, do.clean = T
 
 #How many genes are 0 accross the whole population of mgls cells
 table(rowSums(mgls@data)==0) #6k! 
-remove.zero.genes(mgls)
+mgls<-remove.zero.genes(mgls)
 table(rowSums(mgls@data)==0)  #0 
 
 #Rerun the analysis pipeline on the mgl data only
