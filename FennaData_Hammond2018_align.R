@@ -13,13 +13,67 @@ library(tidyr)
 library(devtools)
 #install_github('MacoskoLab/liger')
 library(liger)
-
+remove.zero.genes <- function(exp) {
+  all.genes.sums <- rowSums(exp@data) 
+  genes.use <- names(all.genes.sums [which(all.genes.sums  >0)])
+  exp@raw.data <- exp@raw.data[genes.use, ]
+  exp@data <- exp@data[genes.use, ]
+  exp
+}
+selectGenes_median = function (object, alpha.thresh = 0.99, var.thresh = 0.1, combine = "union", 
+                               keep.unique = F, capitalize = F, do.plot = T, cex.use = 0.3) 
+{
+  if (length(var.thresh) == 1) {
+    var.thresh <- rep(var.thresh, length(object@raw.data))
+  }
+  genes.use <- c()
+  for (i in 1:length(object@raw.data)) {
+    if (capitalize) {
+      rownames(object@raw.data[[i]]) <- toupper(rownames(object@raw.data[[i]]))
+      rownames(object@norm.data[[i]]) <- toupper(rownames(object@norm.data[[i]]))
+    }
+    trx_per_cell <- colSums(object@raw.data[[i]])
+    gene_expr_mean <- rowMeans(object@norm.data[[i]])
+    gene_expr_var <- sparse.var(object@norm.data[[i]])
+    nolan_constant <- median((1/trx_per_cell))
+    alphathresh.corrected <- alpha.thresh/nrow(object@raw.data[[i]])
+    genemeanupper <- gene_expr_mean + qnorm(1 - alphathresh.corrected/2) * 
+      sqrt(gene_expr_mean * nolan_constant/ncol(object@raw.data[[i]]))
+    genes.new <- names(gene_expr_var)[which(gene_expr_var/nolan_constant > 
+                                              genemeanupper & log10(gene_expr_var) > log10(gene_expr_mean) + 
+                                              (log10(nolan_constant) + var.thresh[i]))]
+    if (do.plot) {
+      plot(log10(gene_expr_mean), log10(gene_expr_var), 
+           cex = cex.use, xlab = "Gene Expression Mean (log10)", 
+           ylab = "Gene Expression Variance (log10)")
+      points(log10(gene_expr_mean[genes.new]), log10(gene_expr_var[genes.new]), 
+             cex = cex.use, col = "green")
+      abline(log10(nolan_constant), 1, col = "purple")
+      legend("bottomright", paste0("Selected genes: ", 
+                                   length(genes.new)), pch = 20, col = "green")
+      title(main = names(object@raw.data)[i])
+    }
+    if (combine == "union") {
+      genes.use <- union(genes.use, genes.new)
+    }
+    if (combine == "intersection") {
+      genes.use <- intersect(genes.use, genes.new)
+    }
+  }
+  if (!keep.unique) {
+    for (i in 1:length(object@raw.data)) {
+      genes.use <- genes.use[genes.use %in% rownames(object@raw.data[[i]])]
+    }
+  }
+  object@var.genes <- genes.use
+  return(object)
+}
 #Set paths and load processed cells 
 path<-"/Users/michaeljohndolan/Google Drive (mdolan@broadinstitute.org)/"
 setwd(path)
 
 #Load up the data 
-#hammond<-readRDS(file = "Hammond2018_microglia_DGE/Round_2_40.filtered.scaled.dge.RDS")
+hammond<-readRDS(file = "Hammond2018_microglia_DGE/Round_2_40.filtered.raw.dge.RDS")
 #hammond<-CreateSeuratObject(hammond)
 mgls<-readRDS("FennaMatt_dLGN_scRNAseq/microglia_Reprocessed.rds")
 hammond<-readRDS(file = "FennaMatt_dLGN_scRNAseq/HammondP4P5_processed.rds")
@@ -48,14 +102,25 @@ hammond.P4.P5<-RunTSNE(object = hammond.P4.P5, dims.use = 1:15, do.fast = TRUE)
 TSNEPlot(object = hammond.P4.P5, pt.size = 0.05, do.label = TRUE)
 saveRDS(hammond.P4.P5, "FennaMatt_dLGN_scRNAseq/HammondP4P5_processed.rds")
 
-#Run liger to combine the two datasets 
-ligerex<-seuratToLiger(list(dLGN, Hammond2018), combined.seurat = F, use.tsne = F)
+#Run liger to combine the two datasets. First remove the excess 0 genes in Tim's data. 
+table(rowSums(hammond@data)==0)
+hammond<-remove.zero.genes(hammond)
+table(rowSums(hammond@data)==0)
 
-#Normalize, scale (but not center) and find variable genes in the shared dataset 
+#Initialize Liger object 
+ligerex<-seuratToLiger(list(mgls, hammond), combined.seurat = F, use.tsne = F)
+
+#Normalize, scale (but not center) and find variable genes in the shared dataset. This did nto work, used a workaround
+#taking the union of Seurat-determined variable genes 
 ligerex = normalize(ligerex)
-ligerex = selectGenes(ligerex, var.thresh = c(0.1, 0.001))
-ligerex = scaleNotCenter(ligerex)
+ligerex = selectGenes_median(ligerex)
 
+#var1<-mgls@var.genes
+#var2<-hammond@var.genes
+#var.genes<-union(var1,var2)
+#ligerex@var.genes<-var.genes
+
+ligerex = scaleNotCenter(ligerex)
 
 #Perform the factorization
 ligerex = optimizeALS(ligerex, k = 20) 
