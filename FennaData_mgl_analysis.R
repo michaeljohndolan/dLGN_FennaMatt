@@ -18,6 +18,13 @@ gene.Sum<-function(obj, norm.to.cell=F) {
   obj<-data.frame(Genes=Genes,Values=Values)
 } #Takes the row sum for all the genes. Can normalize to number of expressing cells. 
 
+remove.zero.genes <- function(exp) {
+  all.genes.sums <- rowSums(exp@data) 
+  genes.use <- names(all.genes.sums [which(all.genes.sums  >0)])
+  exp@raw.data <- object@raw.data[genes.use, ]
+  exp@data <- object@data[genes.use, ]
+}
+
 #Set paths and load processed cells 
 path<-"/Users/mdolan/Google Drive (mdolan@broadinstitute.org)/FennaMatt_dLGN_scRNAseq/"
 setwd(path)
@@ -27,9 +34,11 @@ object<-readRDS("all_Processed.rds")
 
 #Subset and save the microglia for further analysis. See mgl script. 
 mgls<-SubsetData(object = object, ident.use="9", subset.raw = TRUE, do.clean = TRUE)
-#FILTER the cells again. NB otherwise you will have more 0s. 
-mgls<- FilterCells(object = mgls, subset.names = c("nGene", "nUMI","percent.mito"), 
-                     low.thresholds = c(200, 500, -Inf), high.thresholds = c(2500, 15000, 0.1))
+
+#How many genes are 0 accross the whole population of mgls cells
+table(rowSums(mgls@data)==0) #6k! 
+remove.zero.genes(mgls)
+table(rowSums(mgls@data)==0)  #0 
 
 #Rerun the analysis pipeline on the mgl data only
 #Normalize the data and find the variable genes
