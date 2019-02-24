@@ -27,13 +27,14 @@ path<-"/Users/mdolan/Google Drive (mdolan@broadinstitute.org)/FennaMatt_dLGN_scR
 setwd(path)
 samples<-list.files(pattern = "*.txt")
 
-#Loop through each file iteratively and open then merge 
+#Loop through each file iteratively and open then merge
+#Note the min.cells may change as you filter out subsequently
 for(i in 1:length(samples)) {
   if(i==1) {
     #Will initialize a Seurat object for the first file 
     object<-read.table(samples[i],header = TRUE,quote = "",skip = 0,row.names = 1)
     object<-CreateSeuratObject(raw.data = object , min.cells = 3, min.genes = 200, 
-                               project =name.extract(samples[i]))
+                               project =name.extract(samples[i])) 
   }
 
   if(i>1) {
