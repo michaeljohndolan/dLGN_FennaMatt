@@ -110,15 +110,14 @@ table(rowSums(hammond@data)==0)
 #Initialize Liger object 
 ligerex<-seuratToLiger(list(mgls, hammond), combined.seurat = F, use.tsne = F)
 
+#Determine what K and L to use
+suggestK(ligerex) # plot entropy metric to find an elbow that can be used to select the number of factors
+suggestLambda(ligerex, 40) # plot alignment metric to find an elbow that can be used to select the value of lambda
+
 #Normalize, scale (but not center) and find variable genes in the shared dataset. This did nto work, used a workaround
 #taking the union of Seurat-determined variable genes 
 ligerex = normalize(ligerex)
-ligerex = selectGenes_median(ligerex)
-
-#var1<-mgls@var.genes
-#var2<-hammond@var.genes
-#var.genes<-union(var1,var2)
-#ligerex@var.genes<-var.genes
+ligerex = selectGenes(ligerex)
 
 ligerex = scaleNotCenter(ligerex)
 
@@ -131,3 +130,42 @@ ligerex = runTSNE(ligerex)
 plotByDatasetAndCluster(ligerex) #Can also pass in different set of cluster labels to plot
 
 #Read in the clusters from mgl and Hammond dataset. Note that cluster 13 corresponds to Tim's 8. 
+
+
+
+
+
+#Some additional Liger code
+markers = getFactorMarkers(ligerex, num.genes = 10)
+plotGene(ligerex, gene = "Malat1")
+plotGeneViolin(ligerex, gene = "Malat1")
+
+#Examine cluster 16 (Factor 5) as likely candidate for P4/P5 and Cluster 1 in dLGN dataset.
+#Factor 8 looks like an activation signal. Factor 6 is the Spp1 ATM.  
+plotClusterFactors(ligerex)
+plotClusterProportions(ligerex) #see that this is overrepresented in dLGN dataset, could be artefact
+
+#Examine each factor and the shared and dataset specific genes. Run through each one. 
+wordclouds = plotWordClouds(ligerex, return.plots = T)
+wordclouds[[5]]
+
+#Examine expression of specific gene
+plotGene(ligerex, "atf3")
+
+#Examine each factor and the gene loading, and print to a PDF
+pdf(file = "Hammond_dLGN_align_factors.pdf")
+plotFactors(ligerex)
+dev.off()
+
+
+#Plot word cloud data
+pdf(file = "Hammond_dLGN_align_wordcloud.pdf")
+wordclouds = plotWordClouds(ligerex, num.genes = 10, return.plots = T)
+dev.off()
+
+#For validating expression of shared factor genes. 
+dLGN<-SetAllIdent(dLGN, id = "timep") 
+VlnPlot(dLGN, "Gpr84")
+#dLGN<-SetAllIdent(dLGN, id = "res.0.6") 
+
+#Todo: Additional subsets will be in future iterations of liger. 
