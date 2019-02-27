@@ -110,19 +110,18 @@ table(rowSums(hammond@data)==0)
 #Initialize Liger object 
 ligerex<-seuratToLiger(list(mgls, hammond), combined.seurat = F, use.tsne = F)
 
-#Determine what K and L to use
-suggestK(ligerex) # plot entropy metric to find an elbow that can be used to select the number of factors
-suggestLambda(ligerex, 40) # plot alignment metric to find an elbow that can be used to select the value of lambda
-
 #Normalize, scale (but not center) and find variable genes in the shared dataset. This did nto work, used a workaround
 #taking the union of Seurat-determined variable genes 
 ligerex = normalize(ligerex)
 ligerex = selectGenes(ligerex)
-
 ligerex = scaleNotCenter(ligerex)
 
+#Determine what K and L to use for the optimizeALS function
+#suggestK(ligerex) # plot entropy metric to find an elbow that can be used to select the number of factors
+#suggestLambda(ligerex, 40) # plot alignment metric to find an elbow that can be used to select the value of lambda
+
 #Perform the factorization
-ligerex = optimizeALS(ligerex, k = 20) 
+ligerex = optimizeALS(ligerex, k = 40, lambda = 8) 
 ligerex = quantileAlignSNF(ligerex) #SNF clustering and quantile alignment
 
 #Visualize the alignment
