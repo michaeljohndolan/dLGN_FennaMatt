@@ -126,30 +126,55 @@ ligerex = quantileAlignSNF(ligerex) #SNF clustering and quantile alignment
 
 #Visualize the alignment
 ligerex = runTSNE(ligerex)
-plotByDatasetAndCluster(ligerex) #Can also pass in different set of cluster labels to plot
+plotByDatasetAndCluster(ligerex, pt.size = 0.2, text.size = 5) #Can also pass in different set of cluster labels to plot
 
-#Read in the clusters from mgl and Hammond dataset. Note that cluster 13 corresponds to Tim's 8. 
+#Examine how marker gene epression looks in the dataset 
+plotGene(ligerex, gene = "Spp1")
+plotGene(ligerex, gene = "Ccl3")
+plotGene(ligerex, gene = "Atf3")
+plotGene(ligerex, gene = "Ccl4")
 
-
-
-
-
-#Some additional Liger code
-markers = getFactorMarkers(ligerex, num.genes = 10)
-plotGene(ligerex, gene = "Malat1")
-plotGeneViolin(ligerex, gene = "Malat1")
-
-#Examine cluster 16 (Factor 5) as likely candidate for P4/P5 and Cluster 1 in dLGN dataset.
-#Factor 8 looks like an activation signal. Factor 6 is the Spp1 ATM.  
-plotClusterFactors(ligerex)
-plotClusterProportions(ligerex) #see that this is overrepresented in dLGN dataset, could be artefact
-
-#Examine each factor and the shared and dataset specific genes. Run through each one. 
+#Examine the different markers and genes highly loading onto each factor with
+#word clouds. Factor number 6 has lots of the markers with Ccl4, Ccl3, Atf3 in common
 wordclouds = plotWordClouds(ligerex, return.plots = T)
-wordclouds[[5]]
+wordclouds[[6]]
 
-#Examine expression of specific gene
-plotGene(ligerex, "atf3")
+#What cluster does factor 6 relate to? Cluster 13
+plotClusterFactors(ligerex)
+plotClusterProportions(ligerex)
+
+#Need to link the barcodes to cluster 13. Read in different barcodes and link to the liger object 
+
+#NB need to keep these mgl and hammond files separate for the clusters 
+mgl.barcode<-select(mgls@meta.data, orig.ident, res.0.6, timep)
+mgl.barcode$barcode<-rownames(mgl.barcode)
+rownames(mgl.barcode)<-NULL
+hammond.barcode<-select(hammond@meta.data, orig.ident, res.0.6)
+hammond.barcode$timep<-"P4P5"
+hammond.barcode$barcode<-rownames(hammond.barcode)
+rownames(hammond.barcode)<-NULL
+indiv.barcodes<-rbind(mgl.barcode, hammond.barcode) #Combine into a single barcode df for both experiments 
+
+#Create  a liger barcode df and merge these #FIX THIS SOMETHING WRONG HAPPENED 
+ligerex.barcodes<-as.data.frame(ligerex@clusters)
+ligerex.barcodes$barcode<-rownames(ligerex.barcodes)
+rownames(ligerex.barcodes)<-NULL
+
+total.barcodes<-merge(x = mgl.barcode, y = ligerex.barcodes, by="barcode")
+test<-filter(total.barcodes, timep=="P4P5")
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #Examine each factor and the gene loading, and print to a PDF
 pdf(file = "Hammond_dLGN_align_factors.pdf")
@@ -157,14 +182,3 @@ plotFactors(ligerex)
 dev.off()
 
 
-#Plot word cloud data
-pdf(file = "Hammond_dLGN_align_wordcloud.pdf")
-wordclouds = plotWordClouds(ligerex, num.genes = 10, return.plots = T)
-dev.off()
-
-#For validating expression of shared factor genes. 
-dLGN<-SetAllIdent(dLGN, id = "timep") 
-VlnPlot(dLGN, "Gpr84")
-#dLGN<-SetAllIdent(dLGN, id = "res.0.6") 
-
-#Todo: Additional subsets will be in future iterations of liger. 
